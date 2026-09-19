@@ -1,0 +1,10 @@
+{
+  "name": "LearnLite — Learning, uninterrupted",
+  "short_name": "LearnLite",
+  "description": "Data-aware learning for unreliable connectivity.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f5",
+  "theme_color": "#20352e",
+  "icons": []
+}
