@@ -1,98 +1,214 @@
 # LearnLite
 
-LearnLite is a connectivity-aware learning prototype for students who study with slow, intermittent, unreliable, or expensive internet access.
+> A connectivity-aware learning system designed to help students make the most of limited, unreliable, or expensive internet access.
 
-Its central question is simple:
+🌐 **Live Demo:** https://rehanwarraich.github.io/LearnLite/
 
-> If a student has only a small amount of unreliable internet, how can we make sure the limited connectivity they do have provides the maximum possible learning value?
+💻 **GitHub Repository:** https://github.com/rehanwarraich/LearnLite
 
-## The problem
+---
 
-Most learning platforms assume a student can browse, stream, and download whenever they need to. That assumption breaks down when connectivity is expensive or disappears without warning. A student may have a short window online but no good way to decide which of many resources are worth spending that data on.
+## Overview
 
-LearnLite focuses on that decision. It watches the connection, respects a student-defined data budget, ranks resources by learning value, downloads the best-fitting combination, and keeps the resulting lessons usable offline.
+For students in low-connectivity areas, the problem is not always the complete absence of educational resources. Often, internet access is available only for short periods, with limited data and unreliable connections.
 
-This is not a replacement for a full learning management system or a large educational content platform. The prototype demonstrates the focused combination of data-aware prioritization, connectivity-aware synchronization, and offline-first study.
+**LearnLite explores a different approach:**
 
-## Core features
+> Instead of simply providing more content, how can a student get the maximum learning value from the limited connectivity they have?
 
-- Student dashboard with connection status, budget, offline resources, pending work, and recommendations
-- Small sample library spanning Mathematics, Physics, Computer Science, Biology, Chemistry, and English
-- Data budget presets and custom budgets
-- Priority engine that considers importance, urgency, prerequisite value, subject preference, expected use, connection quality, and resource size
-- Lightweight, compressed, and text resource versions selected for the current connection and budget
-- Connectivity simulator for strong, weak, intermittent, and offline conditions
-- Chunked simulated downloads that pause and resume without losing progress
-- Local offline shelf for reading lessons and taking quizzes
-- Locally stored learning progress with a pending synchronization queue
-- Sync center showing active, paused, pending, and completed operations
-- Installable PWA shell with a service worker for app-shell caching
+LearnLite prioritizes educational resources, selects an appropriate version based on the available data budget, downloads content when connectivity is available, and keeps it accessible offline.
+
+---
+
+## Core Idea
+
+LearnLite separates the problem into two decisions:
+
+### 1. What should be downloaded first?
+
+The **Priority Engine** considers factors such as:
+
+- Educational importance
+- Urgency
+- Prerequisites
+- Student preferences
+- Expected usefulness
+- Resource size
+
+It then selects a combination of resources that provides high learning value within the available data budget.
+
+### 2. Which version should be downloaded?
+
+Each resource can have three versions:
+
+| Version | Purpose |
+|---|---|
+| **Full** | Complete learning experience |
+| **Light** | Reduced-size version with core content |
+| **Text** | Minimal-data version for very limited connectivity |
+
+This allows the system to adapt not only **what** gets downloaded, but also **how much data each resource consumes**.
+
+---
+
+## Key Features
+
+### 🧠 Resource Prioritization
+
+A greedy, knapsack-style selection approach chooses high-value resources while respecting the user's data budget.
+
+### 📦 Adaptive Resource Versions
+
+Resources can be downloaded as Full, Light, or Text versions depending on available data.
+
+### 📊 Data Budget
+
+Users can set a data limit and see how much of it has been used. Downloads cannot exceed the available budget.
+
+### 📡 Connectivity Simulation
+
+The prototype can simulate different conditions:
+
+- Good connection
+- Weak connection
+- Offline
+
+This makes it possible to demonstrate how the system behaves under unreliable connectivity.
+
+### 🔄 Connectivity-Aware Synchronization
+
+Downloads can pause when connectivity is lost and continue when it becomes available again.
+
+### 💾 Offline Learning
+
+Downloaded lessons and quizzes remain available without an internet connection.
+
+### 📈 Offline Progress
+
+Learning progress is stored locally and can remain available while offline.
+
+### 📝 Sync Queue
+
+Actions that cannot be synchronized immediately are placed in a local queue for later synchronization.
+
+---
+
+## Sample Learning Library
+
+The prototype includes resources across six subjects:
+
+**Mathematics · Physics · Computer Science · English · Biology · Chemistry**
+
+The sample content includes lessons, explanations, examples, practice questions, and interactive quizzes.
+
+---
 
 ## Architecture
 
-The browser's local IndexedDB database is the primary source of truth for this prototype. Dexie provides the local database layer and stores:
+```text
+                    LearnLite
+                       │
+              ┌────────┴────────┐
+              │                 │
+       Priority Engine    Version Selector
+              │                 │
+              └────────┬────────┘
+                       │
+                 Sync Manager
+                       │
+                IndexedDB / Dexie
+                       │
+              ┌────────┴────────┐
+              │                 │
+       Offline Content    Learning Progress
+````
 
-- Resource metadata and content
-- Download state and resumable progress
-- Data budget and learning preferences
-- Synchronization operations
-- Offline learning progress
+The prototype follows a **local-first architecture**. Downloaded content, progress, and synchronization state are stored locally using IndexedDB through Dexie.js.
 
-The UI is organized around five screens: Overview, Resource library, Offline learning, Sync center, and Preferences. The priority engine and connectivity manager are isolated from the UI so a future API or server-backed resource provider can replace the sample data without changing the selection experience.
+---
 
-## Prioritization algorithm
+## Technology Stack
 
-Each resource receives a score based on:
+* **React + TypeScript**
+* **Vite**
+* **Tailwind CSS**
+* **Dexie.js / IndexedDB**
+* **Progressive Web App architecture**
 
+The current prototype is intentionally client-side and does not require a backend, authentication system, or external database.
+
+---
+
+## Running Locally
+
+```bash
+git clone https://github.com/rehanwarraich/LearnLite.git
+cd LearnLite
+npm install
+npm run dev
 ```
-importance × urgency × prerequisite value × student preference × usage likelihood − size penalty
-```
 
-The size penalty increases when a resource uses a larger share of the remaining budget. Weak or intermittent connectivity adds another penalty to discourage large downloads that are more likely to be interrupted.
+Then open the local development URL shown by Vite.
 
-Selection uses a greedy knapsack-style approximation: resources are ranked by score, then selected when they fit the remaining budget. This runs quickly and is suitable for the small prototype library. The scoring and selection functions are intentionally separate so a dynamic-programming knapsack or another optimizer can be introduced later.
+---
 
-## Offline-first behavior
+## Demonstration
 
-After a resource is synchronized, its content and metadata remain available in the local database. The Offline learning screen does not depend on a connection. Quiz answers and completion status are stored locally immediately. When connectivity returns, the sync manager uploads those progress records and marks them synchronized.
+A typical demonstration can follow this workflow:
 
-The simulated downloader moves in chunks. If the connection changes to Offline, it saves its percentage and marks the operation paused. A later sync continues from the stored percentage instead of starting over.
+1. Set a limited data budget.
+2. Browse available learning resources.
+3. Let LearnLite prioritize resources.
+4. Select or accept an appropriate resource version.
+5. Simulate a weak or interrupted connection.
+6. Continue learning from downloaded content while offline.
+7. Restore connectivity and observe pending synchronization.
 
-## Running the project
+---
 
-Install dependencies and start the Vite development server as usual for a React TypeScript app. The app opens to the Overview screen with the sample resource library seeded into IndexedDB on first launch.
+## Evaluation
 
-For a production build, use the included build script. The generated app includes the PWA manifest and service worker.
+The prototype can be evaluated by comparing LearnLite's prioritization against a normal download order under different data limits.
 
-## Demonstration scenario
+Possible measurements include:
 
-1. Open Preferences and select a 10 MB data budget.
-2. Select Weak in the Connectivity simulator.
-3. Return to Overview and review the recommended resources.
-4. Use Sync now. The system chooses a high-value combination, not simply the first resources in the list.
-5. Switch the simulator to Offline while a resource downloads. The download pauses and preserves its progress.
-6. Switch back to Strong and sync again. The download resumes.
-7. Open an available lesson from Offline learning and complete the included content or quiz.
-8. The progress is saved locally and appears as pending until a later synchronization.
-9. Use Sync now after restoring connectivity to mark the progress synchronized.
+* Useful learning content delivered
+* Essential resources available offline
+* Data used on lower-priority resources
+* Number of essential resources obtained
+* Time required to obtain essential content
+
+---
 
 ## Limitations
 
-- Sample resources are bundled in the client rather than fetched from a live content API.
-- Downloading is simulated in chunks; real HTTP Range requests would be needed for large external files.
-- The service worker caches the application shell. A production resource delivery layer should explicitly cache selected resource payloads.
-- Browser background sync support varies, so the prototype relies on an in-app fallback rather than requiring a background-sync API.
-- The prototype has no authentication or multi-user server. Local state belongs to the current device.
-- The greedy selection method is an approximation and can be replaced with an exact optimizer for a larger library.
+LearnLite is currently a prototype.
 
-## Future improvements
+* The learning library contains sample curriculum content.
+* Downloads are simulated rather than transferred from a production content server.
+* There is currently no backend or user authentication.
+* Synchronization is demonstrated locally rather than between real devices or servers.
+* The prioritization algorithm is an approximation and is not guaranteed to produce a mathematically optimal selection.
 
-- Connect the resource manager to a real educational content API
-- Add a server-side progress endpoint and conflict resolution
-- Use true resumable downloads with HTTP range requests
-- Add resource dependencies to boost prerequisites automatically
-- Add a richer local content renderer for PDF and image resources
-- Add automated browser and unit test execution in CI
-- Use Background Sync where supported with the current in-app fallback retained
+---
 
-LearnLite does not claim to invent offline learning or synchronization. Its contribution is the focused combination of data-aware resource prioritization, connectivity-aware synchronization, and an offline-first learning workflow.
+## Future Directions
+
+Potential future development includes:
+
+* Real educational content repositories
+* Server-side synchronization
+* More advanced resource-selection algorithms
+* Automatic network-quality detection
+* Smarter personalization based on learning progress
+* Android support for deeper background synchronization
+* Real-world testing in low-connectivity communities
+
+---
+
+## Project Philosophy
+
+LearnLite is built around a simple idea:
+
+> **Limited connectivity should limit how much data a student can access — not how much they can learn.**
+
